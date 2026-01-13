@@ -26,9 +26,23 @@ pnpm db:migrate:deploy && pnpm start
 ```
 
 ### Root Directory:
-**ВАЖНО:** Укажите Root Directory как `.` (точка) или оставьте пустым, но убедитесь, что рабочая директория - это корень репозитория, а не `src/`.
+**КРИТИЧЕСКИ ВАЖНО:** 
 
-Если файл `dist/index.js` не найден, это означает, что Root Directory настроен неправильно. На Render рабочая директория должна быть корнем репозитория (где находится `package.json`), а не поддиректорией `src/`.
+1. **Если ваш репозиторий содержит только backend код:**
+   - Root Directory должен быть **пустым** или **`.`** (точка)
+   - Это означает, что `package.json` находится в корне репозитория
+
+2. **Если ваш репозиторий - monorepo (backend и frontend в одном репозитории):**
+   - Root Directory должен быть: `incident_tracker_backend`
+   - Это означает, что Render будет работать из папки `incident_tracker_backend/`
+
+**Как проверить:**
+- Если ошибка: `Cannot find module '/opt/render/project/src/dist/index.js'`
+  - Это означает, что Root Directory указан как `src/` - **НЕПРАВИЛЬНО!**
+  - Измените на пустое значение или `incident_tracker_backend` (если monorepo)
+
+- Правильный путь к файлу должен быть: `/opt/render/project/dist/index.js` (если Root Directory пустой)
+- Или: `/opt/render/project/incident_tracker_backend/dist/index.js` (если Root Directory = `incident_tracker_backend`)
 
 ### Environment Variables:
 ```
