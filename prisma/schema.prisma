@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -108,7 +108,7 @@ model AuditLog {
   entityType String   @map("entity_type")
   entityId   String   @map("entity_id")
   action     String
-  diffJson   String?  @map("diff_json") // JSON stored as string in SQLite
+    diffJson   String?  @map("diff_json") // JSON stored as text in PostgreSQL
   createdAt  DateTime @default(now()) @map("created_at")
 
   actor User @relation(fields: [actorId], references: [id])
