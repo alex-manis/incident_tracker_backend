@@ -134,8 +134,8 @@ node dist/index.js
    - Обновлен `prisma/schema.prisma`: `provider = "postgresql"`
    - Обновлена миграция для PostgreSQL (DATETIME → TIMESTAMP(3))
 
-2. ✅ Убран `rootDir` из `tsconfig.json`
-   - Это позволяет компилировать файлы из `shared/` директории
+2. ✅ Настроен `rootDir: "./"` в `tsconfig.json`
+   - Это позволяет компилировать файлы из `src/` и `shared/` директорий
    - Структура сборки остается корректной
 
 3. ✅ Переход с pnpm на npm
