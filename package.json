@@ -2,6 +2,7 @@
   "name": "@incident-tracker/api",
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "npm@10.0.0",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && tsc",

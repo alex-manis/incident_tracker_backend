@@ -6,10 +6,19 @@
 
 ### Build Command:
 ```bash
-corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm build
+npm install && npm run build
 ```
 
 ### Start Command:
+```bash
+npm run db:migrate:deploy && npm start
+```
+
+**Примечание:** Если вы предпочитаете использовать pnpm, используйте:
+```bash
+corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm build
+```
+И для Start Command:
 ```bash
 pnpm db:migrate:deploy && pnpm start
 ```
