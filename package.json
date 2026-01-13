@@ -15,7 +15,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@incident-tracker/shared": "workspace:*",
+    "@incident-tracker/shared": "file:./shared",
     "@prisma/client": "^5.9.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
