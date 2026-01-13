@@ -6,10 +6,10 @@
 
 ### Build Command:
 ```bash
-NODE_ENV=development npm install && npm run build
+npm install --include=dev && npm run build
 ```
 
-**Важно:** Установка `NODE_ENV=development` перед `npm install` необходима для установки devDependencies (TypeScript, типы и т.д.), которые требуются для сборки проекта. Альтернативно можно использовать `npm install --include=dev`.
+**Важно:** Флаг `--include=dev` необходим для установки devDependencies (TypeScript, типы и т.д.), которые требуются для сборки проекта. Без этого флага npm не установит devDependencies в production окружении.
 
 ### Start Command:
 ```bash
