@@ -12,7 +12,7 @@ export class AuditLogRepository {
     return prisma.auditLog.create({
       data: {
         ...data,
-        diffJson: data.diffJson || null,
+        diffJson: data.diffJson ? JSON.stringify(data.diffJson) : null,
       },
     });
   }

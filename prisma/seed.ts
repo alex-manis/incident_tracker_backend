@@ -1,6 +1,5 @@
 import { hashPassword } from '../src/lib/hash.js';
 import { prisma } from '../src/lib/prisma.js';
-import { Role } from '@prisma/client';
 
 async function main() {
   // Create admin user
@@ -11,7 +10,7 @@ async function main() {
       name: 'Admin User',
       email: 'admin@example.com',
       passwordHash: await hashPassword('admin123'),
-      role: Role.ADMIN,
+      role: 'ADMIN',
     },
   });
 
@@ -23,7 +22,7 @@ async function main() {
       name: 'Manager User',
       email: 'manager@example.com',
       passwordHash: await hashPassword('manager123'),
-      role: Role.MANAGER,
+      role: 'MANAGER',
     },
   });
 
@@ -35,7 +34,7 @@ async function main() {
       name: 'Agent User',
       email: 'agent@example.com',
       passwordHash: await hashPassword('agent123'),
-      role: Role.AGENT,
+      role: 'AGENT',
     },
   });
 

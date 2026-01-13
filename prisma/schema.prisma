@@ -3,37 +3,38 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  MANAGER
-  AGENT
-  VIEWER
-}
+// SQLite doesn't support enums, using String instead
+// enum Role {
+//   ADMIN
+//   MANAGER
+//   AGENT
+//   VIEWER
+// }
 
-enum IncidentSeverity {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
+// enum IncidentSeverity {
+//   LOW
+//   MEDIUM
+//   HIGH
+//   CRITICAL
+// }
 
-enum IncidentStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
+// enum IncidentStatus {
+//   OPEN
+//   IN_PROGRESS
+//   RESOLVED
+//   CLOSED
+// }
 
 model User {
   id           String    @id @default(uuid())
   name         String
   email        String    @unique
   passwordHash String    @map("password_hash")
-  role         Role      @default(VIEWER)
+  role         String    @default("VIEWER")
   isActive     Boolean   @default(true) @map("is_active")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
@@ -66,8 +67,8 @@ model Incident {
   id          String           @id @default(uuid())
   title       String
   description String
-  severity    IncidentSeverity
-  status      IncidentStatus   @default(OPEN)
+  severity    String
+  status      String   @default("OPEN")
   assigneeId  String?          @map("assignee_id")
   reporterId  String           @map("reporter_id")
   dueAt       DateTime?        @map("due_at")
@@ -107,7 +108,7 @@ model AuditLog {
   entityType String   @map("entity_type")
   entityId   String   @map("entity_id")
   action     String
-  diffJson   Json?    @map("diff_json") // JSON type in PostgreSQL
+  diffJson   String?  @map("diff_json") // JSON stored as string in SQLite
   createdAt  DateTime @default(now()) @map("created_at")
 
   actor User @relation(fields: [actorId], references: [id])

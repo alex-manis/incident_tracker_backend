@@ -1,8 +1,4 @@
-# Настройка деплоя на Render.com для Backend
-
-## Проблема с yarn
-
-Render по умолчанию использует `yarn`, но проект использует `pnpm`. Нужно настроить правильные команды сборки.
+# Деплой Backend на Render.com
 
 ## Настройки для Render.com
 
@@ -27,9 +23,11 @@ NODE_ENV=production
 DATABASE_URL=<Internal Database URL от PostgreSQL сервиса>
 JWT_SECRET=<сгенерируйте случайную строку минимум 32 символа>
 JWT_REFRESH_SECRET=<сгенерируйте случайную строку минимум 32 символа>
-FRONTEND_URL=https://your-frontend-url.onrender.com
+FRONTEND_URL=https://your-frontend-url.vercel.app
 PORT=3001
 ```
+
+**Важно:** `FRONTEND_URL` должен указывать на ваш Vercel домен!
 
 ## Генерация JWT Secrets
 
@@ -37,8 +35,6 @@ PORT=3001
 ```bash
 openssl rand -base64 32
 ```
-
-Или использовать онлайн генератор случайных строк.
 
 ## После настройки
 

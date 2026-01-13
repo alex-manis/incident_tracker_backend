@@ -9,7 +9,7 @@ function toAuditLogWithActor(log: any): AuditLogWithActor {
     entityType: log.entityType,
     entityId: log.entityId,
     action: log.action,
-    diffJson: log.diffJson as Record<string, unknown> | null,
+    diffJson: log.diffJson ? JSON.parse(log.diffJson) as Record<string, unknown> : null,
     createdAt: log.createdAt,
     actor: {
       id: log.actor.id,
