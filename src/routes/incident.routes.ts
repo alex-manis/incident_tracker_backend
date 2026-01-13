@@ -6,7 +6,7 @@ import { validateQuery, validateParams } from '../middleware/validate.js';
 import { Role, IncidentFiltersSchema, PaginationParamsSchema } from '@incident-tracker/shared';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 const controller = new IncidentController();
 
 router.get(

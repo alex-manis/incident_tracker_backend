@@ -30,7 +30,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
-app.use(pinoHttp({ logger }));
+app.use(pinoHttp({ logger: logger as any }));
 
 // Routes
 app.use('/api/auth', authRoutes);

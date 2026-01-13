@@ -5,7 +5,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rate-limit.js';
 import { LoginRequestSchema } from '@incident-tracker/shared';
 
-const router = Router();
+const router: Router = Router();
 const controller = new AuthController();
 
 router.post('/login', authLimiter, validateBody(LoginRequestSchema), controller.login.bind(controller));

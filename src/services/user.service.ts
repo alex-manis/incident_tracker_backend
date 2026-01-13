@@ -7,7 +7,7 @@ function toUserPublic(user: User): UserPublic {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role,
+    role: user.role as Role,
     isActive: user.isActive,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,

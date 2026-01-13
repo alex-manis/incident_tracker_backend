@@ -4,7 +4,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { requireRole } from '../middleware/authorize.js';
 import { Role } from '@incident-tracker/shared';
 
-const router = Router();
+const router: Router = Router();
 const controller = new UserController();
 
 router.get('/', authMiddleware, requireRole([Role.ADMIN, Role.MANAGER]), controller.getMany.bind(controller));

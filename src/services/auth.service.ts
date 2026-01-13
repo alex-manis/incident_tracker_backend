@@ -2,7 +2,7 @@ import { comparePassword } from '../lib/hash.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { UserRepository } from '../repositories/user.repository.js';
 import { RefreshTokenRepository } from '../repositories/refresh-token.repository.js';
-import { LoginRequest, UserPublic } from '@incident-tracker/shared';
+import { LoginRequest, UserPublic, Role } from '@incident-tracker/shared';
 import { User } from '@prisma/client';
 
 const userRepo = new UserRepository();
@@ -13,7 +13,7 @@ function toUserPublic(user: User): UserPublic {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role,
+    role: user.role as Role,
     isActive: user.isActive,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
@@ -39,13 +39,13 @@ export class AuthService {
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as Role,
     });
 
     const refreshToken = signRefreshToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as Role,
     });
 
     const expiresAt = new Date();
@@ -85,13 +85,13 @@ export class AuthService {
     const newAccessToken = signAccessToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as Role,
     });
 
     const newRefreshToken = signRefreshToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as Role,
     });
 
     const expiresAt = new Date();

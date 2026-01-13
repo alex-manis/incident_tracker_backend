@@ -4,7 +4,6 @@
     "module": "ESNext",
     "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -19,6 +18,6 @@
       "@incident-tracker/shared": ["./shared/src"]
     }
   },
-  "include": ["src/**/*", "prisma/**/*", "shared/**/*"],
+  "include": ["src/**/*", "shared/**/*"],
   "exclude": ["node_modules", "dist"]
 }

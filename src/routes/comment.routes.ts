@@ -6,7 +6,7 @@ import { validateParams } from '../middleware/validate.js';
 import { Role } from '@incident-tracker/shared';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 const controller = new CommentController();
 
 router.get(

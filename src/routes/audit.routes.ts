@@ -4,7 +4,7 @@ import { authMiddleware } from '../middleware/auth.js';
 import { validateParams } from '../middleware/validate.js';
 import { z } from 'zod';
 
-const router = Router();
+const router: Router = Router();
 const controller = new AuditLogController();
 
 router.get(

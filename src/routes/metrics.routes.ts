@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Registry, collectDefaultMetrics } from 'prom-client';
 
-const router = Router();
+const router: Router = Router();
 const register = new Registry();
 
 collectDefaultMetrics({ register });
