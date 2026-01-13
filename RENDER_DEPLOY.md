@@ -6,8 +6,10 @@
 
 ### Build Command:
 ```bash
-npm install && npm run build
+NODE_ENV=development npm install && npm run build
 ```
+
+**Важно:** Установка `NODE_ENV=development` перед `npm install` необходима для установки devDependencies (TypeScript, типы и т.д.), которые требуются для сборки проекта. Альтернативно можно использовать `npm install --include=dev`.
 
 ### Start Command:
 ```bash
