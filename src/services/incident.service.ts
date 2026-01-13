@@ -1,0 +1,173 @@
+import { IncidentRepository } from '../repositories/incident.repository.js';
+import { AuditLogRepository } from '../repositories/audit-log.repository.js';
+import {
+  CreateIncidentRequest,
+  UpdateIncidentRequest,
+  IncidentFilters,
+  PaginationParams,
+  IncidentWithRelations,
+  DashboardSummary,
+} from '@incident-tracker/shared';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+const incidentRepo = new IncidentRepository();
+const auditLogRepo = new AuditLogRepository();
+
+function toIncidentWithRelations(incident: any): IncidentWithRelations {
+  return {
+    id: incident.id,
+    title: incident.title,
+    description: incident.description,
+    severity: incident.severity,
+    status: incident.status,
+    assigneeId: incident.assigneeId,
+    reporterId: incident.reporterId,
+    dueAt: incident.dueAt,
+    createdAt: incident.createdAt,
+    updatedAt: incident.updatedAt,
+    assignee: incident.assignee
+      ? {
+          id: incident.assignee.id,
+          name: incident.assignee.name,
+          email: incident.assignee.email,
+          role: incident.assignee.role,
+          isActive: incident.assignee.isActive,
+          createdAt: incident.assignee.createdAt,
+          updatedAt: incident.assignee.updatedAt,
+        }
+      : null,
+    reporter: {
+      id: incident.reporter.id,
+      name: incident.reporter.name,
+      email: incident.reporter.email,
+      role: incident.reporter.role,
+      isActive: incident.reporter.isActive,
+      createdAt: incident.reporter.createdAt,
+      updatedAt: incident.reporter.updatedAt,
+    },
+  };
+}
+
+export class IncidentService {
+  async getMany(
+    filters: IncidentFilters,
+    pagination: PaginationParams
+  ): Promise<{ items: IncidentWithRelations[]; meta: any }> {
+    const { items, total } = await incidentRepo.findMany(filters, pagination);
+
+    const itemsWithRelations = await Promise.all(
+      items.map(async (incident) => {
+        const [assignee, reporter] = await Promise.all([
+          incident.assigneeId ? prisma.user.findUnique({ where: { id: incident.assigneeId } }) : null,
+          prisma.user.findUnique({ where: { id: incident.reporterId } }),
+        ]);
+
+        return toIncidentWithRelations({
+          ...incident,
+          assignee,
+          reporter: reporter!,
+        });
+      })
+    );
+
+    return {
+      items: itemsWithRelations,
+      meta: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages: Math.ceil(total / pagination.limit),
+      },
+    };
+  }
+
+  async getById(id: string): Promise<IncidentWithRelations> {
+    const incident = await incidentRepo.findById(id);
+    if (!incident) {
+      throw new Error('Incident not found');
+    }
+
+    const [assignee, reporter] = await Promise.all([
+      incident.assigneeId ? prisma.user.findUnique({ where: { id: incident.assigneeId } }) : null,
+      prisma.user.findUnique({ where: { id: incident.reporterId } }),
+    ]);
+
+    return toIncidentWithRelations({
+      ...incident,
+      assignee,
+      reporter: reporter!,
+    });
+  }
+
+  async create(data: CreateIncidentRequest, reporterId: string, actorId: string): Promise<IncidentWithRelations> {
+    const incident = await incidentRepo.create({
+      ...data,
+      reporterId,
+      assigneeId: data.assigneeId ?? null,
+      dueAt: data.dueAt ? new Date(data.dueAt) : null,
+    });
+
+    await auditLogRepo.create({
+      actorId,
+      entityType: 'Incident',
+      entityId: incident.id,
+      action: 'CREATE',
+      diffJson: { ...data, reporterId },
+    });
+
+    return this.getById(incident.id);
+  }
+
+  async update(
+    id: string,
+    data: UpdateIncidentRequest,
+    actorId: string
+  ): Promise<IncidentWithRelations> {
+    const existing = await incidentRepo.findById(id);
+    if (!existing) {
+      throw new Error('Incident not found');
+    }
+
+    const updateData: any = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.severity !== undefined) updateData.severity = data.severity;
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.assigneeId !== undefined) updateData.assigneeId = data.assigneeId ?? null;
+    if (data.dueAt !== undefined) updateData.dueAt = data.dueAt ? new Date(data.dueAt) : null;
+
+    const updated = await incidentRepo.update(id, updateData);
+
+    const diff: Record<string, unknown> = {};
+    Object.keys(updateData).forEach((key) => {
+      if (existing[key as keyof typeof existing] !== updateData[key]) {
+        diff[key] = { from: existing[key as keyof typeof existing], to: updateData[key] };
+      }
+    });
+
+    await auditLogRepo.create({
+      actorId,
+      entityType: 'Incident',
+      entityId: id,
+      action: 'UPDATE',
+      diffJson: diff,
+    });
+
+    return this.getById(id);
+  }
+
+  async getDashboardSummary(): Promise<DashboardSummary> {
+    const summary = await incidentRepo.getSummary();
+
+    return {
+      totalIncidents: summary.total,
+      openIncidents: summary.byStatus.OPEN || 0,
+      inProgressIncidents: summary.byStatus.IN_PROGRESS || 0,
+      resolvedIncidents: summary.byStatus.RESOLVED || 0,
+      criticalIncidents: summary.bySeverity.CRITICAL || 0,
+      incidentsBySeverity: summary.bySeverity,
+      incidentsByStatus: summary.byStatus,
+    };
+  }
+}

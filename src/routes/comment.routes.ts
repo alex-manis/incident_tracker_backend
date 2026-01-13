@@ -1,0 +1,23 @@
+import { Router } from 'express';
+import { CommentController } from '../controllers/comment.controller.js';
+import { authMiddleware } from '../middleware/auth.js';
+import { validateParams } from '../middleware/validate.js';
+import { z } from 'zod';
+
+const router = Router();
+const controller = new CommentController();
+
+router.get(
+  '/:id/comments',
+  authMiddleware,
+  validateParams(z.object({ id: z.string().uuid() })),
+  controller.getMany.bind(controller)
+);
+router.post(
+  '/:id/comments',
+  authMiddleware,
+  validateParams(z.object({ id: z.string().uuid() })),
+  controller.create.bind(controller)
+);
+
+export default router;
