@@ -1,7 +1,6 @@
-import { PrismaClient, Role } from '@prisma/client';
 import { hashPassword } from '../src/lib/hash.js';
-
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/prisma.js';
+import { Role } from '@prisma/client';
 
 async function main() {
   // Create admin user

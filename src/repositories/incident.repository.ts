@@ -1,7 +1,6 @@
-import { PrismaClient, Incident, IncidentSeverity, IncidentStatus } from '@prisma/client';
+import { Incident } from '@prisma/client';
 import { IncidentFilters, PaginationParams } from '@incident-tracker/shared';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 export class IncidentRepository {
   async findMany(
@@ -24,8 +23,8 @@ export class IncidentRepository {
     }
     if (filters.search) {
       where.OR = [
-        { title: { contains: filters.search, mode: 'insensitive' } },
-        { description: { contains: filters.search, mode: 'insensitive' } },
+        { title: { contains: filters.search } },
+        { description: { contains: filters.search } },
       ];
     }
 
@@ -40,6 +39,10 @@ export class IncidentRepository {
         orderBy,
         skip: (pagination.page - 1) * pagination.limit,
         take: pagination.limit,
+        include: {
+          assignee: true,
+          reporter: true,
+        },
       }),
       prisma.incident.count({ where }),
     ]);
@@ -50,13 +53,17 @@ export class IncidentRepository {
   async findById(id: string): Promise<Incident | null> {
     return prisma.incident.findUnique({
       where: { id },
+      include: {
+        assignee: true,
+        reporter: true,
+      },
     });
   }
 
   async create(data: {
     title: string;
     description: string;
-    severity: IncidentSeverity;
+    severity: string;
     reporterId: string;
     assigneeId?: string | null;
     dueAt?: Date | null;
@@ -69,8 +76,8 @@ export class IncidentRepository {
   async update(id: string, data: {
     title?: string;
     description?: string;
-    severity?: IncidentSeverity;
-    status?: IncidentStatus;
+    severity?: string;
+    status?: string;
     assigneeId?: string | null;
     dueAt?: Date | null;
   }): Promise<Incident> {

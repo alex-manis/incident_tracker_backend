@@ -1,7 +1,6 @@
-import { PrismaClient, RefreshToken } from '@prisma/client';
+import { RefreshToken } from '@prisma/client';
 import { hashPassword, comparePassword } from '../lib/hash.js';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 export class RefreshTokenRepository {
   async create(data: {

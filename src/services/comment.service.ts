@@ -1,9 +1,7 @@
 import { CommentRepository } from '../repositories/comment.repository.js';
 import { AuditLogRepository } from '../repositories/audit-log.repository.js';
 import { CreateCommentRequest, CommentWithAuthor } from '@incident-tracker/shared';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 const commentRepo = new CommentRepository();
 const auditLogRepo = new AuditLogRepository();
 
@@ -30,15 +28,12 @@ export class CommentService {
   async getManyByIncidentId(incidentId: string): Promise<CommentWithAuthor[]> {
     const comments = await commentRepo.findManyByIncidentId(incidentId);
 
-    const commentsWithAuthors = await Promise.all(
-      comments.map(async (comment) => {
-        const author = await prisma.user.findUnique({ where: { id: comment.authorId } });
-        return toCommentWithAuthor({
-          ...comment,
-          author: author!,
-        });
-      })
-    );
+    const commentsWithAuthors = comments.map((comment: any) => {
+      if (!comment.author) {
+        throw new Error('Author not found');
+      }
+      return toCommentWithAuthor(comment);
+    });
 
     return commentsWithAuthors;
   }
@@ -63,9 +58,12 @@ export class CommentService {
     });
 
     const author = await prisma.user.findUnique({ where: { id: authorId } });
+    if (!author) {
+      throw new Error('Author not found');
+    }
     return toCommentWithAuthor({
       ...comment,
-      author: author!,
+      author,
     });
   }
 }

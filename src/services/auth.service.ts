@@ -81,10 +81,7 @@ export class AuthService {
       throw new Error('User not found or inactive');
     }
 
-    // Revoke old token
-    await refreshTokenRepo.revokeToken(storedToken.id);
-
-    // Issue new tokens
+    // Issue new tokens first (before revoking old one to prevent race condition)
     const newAccessToken = signAccessToken({
       userId: user.id,
       email: user.email,
@@ -100,11 +97,18 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
+    // Create new token first, then revoke old one
     await refreshTokenRepo.create({
       userId: user.id,
       token: newRefreshToken,
       expiresAt,
     });
+
+    // Revoke old token after new one is created
+    await refreshTokenRepo.revokeToken(storedToken.id);
+
+    // Clean up expired tokens
+    await refreshTokenRepo.deleteExpiredTokens();
 
     return {
       accessToken: newAccessToken,

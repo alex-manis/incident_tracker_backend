@@ -1,8 +1,5 @@
 import { AuditLogRepository } from '../repositories/audit-log.repository.js';
 import { AuditLogWithActor } from '@incident-tracker/shared';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 const auditLogRepo = new AuditLogRepository();
 
 function toAuditLogWithActor(log: any): AuditLogWithActor {
@@ -30,15 +27,12 @@ export class AuditLogService {
   async getByEntity(entityType: string, entityId: string): Promise<AuditLogWithActor[]> {
     const logs = await auditLogRepo.findManyByEntity(entityType, entityId);
 
-    const logsWithActors = await Promise.all(
-      logs.map(async (log) => {
-        const actor = await prisma.user.findUnique({ where: { id: log.actorId } });
-        return toAuditLogWithActor({
-          ...log,
-          actor: actor!,
-        });
-      })
-    );
+    const logsWithActors = logs.map((log: any) => {
+      if (!log.actor) {
+        throw new Error('Actor not found');
+      }
+      return toAuditLogWithActor(log);
+    });
 
     return logsWithActors;
   }

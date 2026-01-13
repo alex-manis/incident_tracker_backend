@@ -1,12 +1,14 @@
-import { PrismaClient, Comment } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { Comment } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 
 export class CommentRepository {
   async findManyByIncidentId(incidentId: string): Promise<Comment[]> {
     return prisma.comment.findMany({
       where: { incidentId },
       orderBy: { createdAt: 'asc' },
+      include: {
+        author: true,
+      },
     });
   }
 

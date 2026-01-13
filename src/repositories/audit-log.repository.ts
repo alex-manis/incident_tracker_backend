@@ -1,6 +1,5 @@
-import { PrismaClient, AuditLog } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { AuditLog } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 
 export class AuditLogRepository {
   async create(data: {
@@ -11,7 +10,10 @@ export class AuditLogRepository {
     diffJson?: Record<string, unknown> | null;
   }): Promise<AuditLog> {
     return prisma.auditLog.create({
-      data,
+      data: {
+        ...data,
+        diffJson: data.diffJson || null,
+      },
     });
   }
 
@@ -22,6 +24,9 @@ export class AuditLogRepository {
         entityId,
       },
       orderBy: { createdAt: 'desc' },
+      include: {
+        actor: true,
+      },
     });
   }
 }

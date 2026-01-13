@@ -8,9 +8,6 @@ import {
   IncidentWithRelations,
   DashboardSummary,
 } from '@incident-tracker/shared';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 const incidentRepo = new IncidentRepository();
 const auditLogRepo = new AuditLogRepository();
 
@@ -56,20 +53,12 @@ export class IncidentService {
   ): Promise<{ items: IncidentWithRelations[]; meta: any }> {
     const { items, total } = await incidentRepo.findMany(filters, pagination);
 
-    const itemsWithRelations = await Promise.all(
-      items.map(async (incident) => {
-        const [assignee, reporter] = await Promise.all([
-          incident.assigneeId ? prisma.user.findUnique({ where: { id: incident.assigneeId } }) : null,
-          prisma.user.findUnique({ where: { id: incident.reporterId } }),
-        ]);
-
-        return toIncidentWithRelations({
-          ...incident,
-          assignee,
-          reporter: reporter!,
-        });
-      })
-    );
+    const itemsWithRelations = items.map((incident: any) => {
+      if (!incident.reporter) {
+        throw new Error('Reporter not found');
+      }
+      return toIncidentWithRelations(incident);
+    });
 
     return {
       items: itemsWithRelations,
@@ -88,16 +77,12 @@ export class IncidentService {
       throw new Error('Incident not found');
     }
 
-    const [assignee, reporter] = await Promise.all([
-      incident.assigneeId ? prisma.user.findUnique({ where: { id: incident.assigneeId } }) : null,
-      prisma.user.findUnique({ where: { id: incident.reporterId } }),
-    ]);
+    const incidentWithRelations = incident as any;
+    if (!incidentWithRelations.reporter) {
+      throw new Error('Reporter not found');
+    }
 
-    return toIncidentWithRelations({
-      ...incident,
-      assignee,
-      reporter: reporter!,
-    });
+    return toIncidentWithRelations(incidentWithRelations);
   }
 
   async create(data: CreateIncidentRequest, reporterId: string, actorId: string): Promise<IncidentWithRelations> {

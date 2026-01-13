@@ -1,7 +1,6 @@
-import { PrismaClient, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { Role } from '@incident-tracker/shared';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 export class UserRepository {
   async findByEmail(email: string): Promise<User | null> {
