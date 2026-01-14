@@ -1,20 +1,28 @@
+import type { CookieOptions } from "express";
+
+const isProd = process.env.NODE_ENV === "production";
+
+const sameSite: CookieOptions["sameSite"] = isProd ? "none" : "lax";
+
 export const config = {
   port: Number(process.env.PORT) || 3001,
-  nodeEnv: process.env.NODE_ENV || 'development',
-  databaseUrl: process.env.DATABASE_URL || '',
-  jwtSecret: process.env.JWT_SECRET || '',
-  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
-  jwtExpiresIn: '15m',
-  jwtRefreshExpiresIn: '7d',
-  frontendUrl: process.env.FRONTEND_URL || 'https://tracker.alexmanis.org',
-  cookieName: 'refreshToken',
+  nodeEnv: process.env.NODE_ENV || "development",
+  databaseUrl: process.env.DATABASE_URL || "",
+  jwtSecret: process.env.JWT_SECRET || "",
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || "",
+  jwtExpiresIn: "15m",
+  jwtRefreshExpiresIn: "7d",
+
+  frontendUrl: (process.env.FRONTEND_URL || "https://tracker.alexmanis.org").replace(/\/$/, ""),
+
+  cookieName: "refreshToken",
   cookieOptions: {
     httpOnly: true,
     secure: isProd,
-    sameSite: (isProd ? "none" : "lax") as const,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/auth/refresh"
-  },
+  } as CookieOptions
 };
 
 if (!config.databaseUrl) {
