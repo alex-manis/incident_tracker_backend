@@ -21,6 +21,8 @@ import metricsRoutes from './routes/metrics.routes.js';
 
 const app = express();
 
+
+
 // Middleware
 app.use(
   cors({
@@ -28,6 +30,7 @@ app.use(
     credentials: true,
   })
 );
+app.options("*", cors({ origin: config.frontendUrl, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(pinoHttp({ logger: logger as any }));

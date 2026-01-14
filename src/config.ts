@@ -6,13 +6,14 @@ export const config = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
   jwtExpiresIn: '15m',
   jwtRefreshExpiresIn: '7d',
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  frontendUrl: process.env.FRONTEND_URL || 'https://tracker.alexmanis.org',
   cookieName: 'refreshToken',
   cookieOptions: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' as const,
+    secure: isProd,
+    sameSite: (isProd ? "none" : "lax") as const,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: "/auth/refresh"
   },
 };
 
