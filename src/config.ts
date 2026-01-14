@@ -2,6 +2,7 @@ import type { CookieOptions } from "express";
 
 const isProd = process.env.NODE_ENV === "production";
 
+// express CookieOptions.sameSite: boolean | 'lax' | 'strict' | 'none'
 const sameSite: CookieOptions["sameSite"] = isProd ? "none" : "lax";
 
 export const config = {
@@ -18,20 +19,21 @@ export const config = {
   cookieName: "refreshToken",
   cookieOptions: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none' as const,
-    path: '/',
+    secure: isProd,
+    sameSite,
+    path: "/api/auth/refresh",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   },
+} as const;
 
-  if(!config.databaseUrl) {
-    throw new Error('DATABASE_URL is required');
+if (!config.databaseUrl) {
+  throw new Error("DATABASE_URL is required");
 }
 
 if (!config.jwtSecret || config.jwtSecret.length < 32) {
-  throw new Error('JWT_SECRET must be at least 32 characters');
+  throw new Error("JWT_SECRET must be at least 32 characters");
 }
 
 if (!config.jwtRefreshSecret || config.jwtRefreshSecret.length < 32) {
-  throw new Error('JWT_REFRESH_SECRET must be at least 32 characters');
+  throw new Error("JWT_REFRESH_SECRET must be at least 32 characters");
 }
