@@ -18,15 +18,14 @@ export const config = {
   cookieName: "refreshToken",
   cookieOptions: {
     httpOnly: true,
-    secure: isProd,
-    sameSite,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none' as const,
+    path: '/',
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: "/auth/refresh"
-  } as CookieOptions
-};
+  },
 
-if (!config.databaseUrl) {
-  throw new Error('DATABASE_URL is required');
+  if(!config.databaseUrl) {
+    throw new Error('DATABASE_URL is required');
 }
 
 if (!config.jwtSecret || config.jwtSecret.length < 32) {
