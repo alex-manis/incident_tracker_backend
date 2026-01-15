@@ -1,13 +1,14 @@
-import { Incident } from '@prisma/client';
+import { Incident, User } from '@prisma/client';
 import { IncidentFilters, PaginationParams } from '@incident-tracker/shared';
 import { prisma } from '../lib/prisma.js';
+import { IncidentWithRelations } from '../lib/types.js';
 
 export class IncidentRepository {
   async findMany(
     filters: IncidentFilters,
     pagination: PaginationParams
-  ): Promise<{ items: Incident[]; total: number }> {
-    const where: any = {};
+  ): Promise<{ items: IncidentWithRelations[]; total: number }> {
+    const where: Record<string, unknown> = {};
 
     if (filters.status) {
       where.status = filters.status;
@@ -28,7 +29,7 @@ export class IncidentRepository {
       ];
     }
 
-    const orderBy: any = {};
+    const orderBy: Record<string, 'asc' | 'desc'> = {};
     const sortBy = filters.sortBy || 'createdAt';
     const sortOrder = filters.sortOrder || 'desc';
     orderBy[sortBy] = sortOrder;
@@ -50,7 +51,7 @@ export class IncidentRepository {
     return { items, total };
   }
 
-  async findById(id: string): Promise<Incident | null> {
+  async findById(id: string): Promise<IncidentWithRelations | null> {
     return prisma.incident.findUnique({
       where: { id },
       include: {

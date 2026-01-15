@@ -1,8 +1,10 @@
 import { AuditLogRepository } from '../repositories/audit-log.repository.js';
-import { AuditLogWithActor } from '@incident-tracker/shared';
+import { AuditLogWithActor as AuditLogWithActorDTO } from '@incident-tracker/shared';
+import { AuditLogWithActor } from '../lib/types.js';
+
 const auditLogRepo = new AuditLogRepository();
 
-function toAuditLogWithActor(log: any): AuditLogWithActor {
+function toAuditLogWithActor(log: AuditLogWithActor): AuditLogWithActorDTO {
   return {
     id: log.id,
     actorId: log.actorId,
@@ -24,10 +26,10 @@ function toAuditLogWithActor(log: any): AuditLogWithActor {
 }
 
 export class AuditLogService {
-  async getByEntity(entityType: string, entityId: string): Promise<AuditLogWithActor[]> {
+  async getByEntity(entityType: string, entityId: string): Promise<AuditLogWithActorDTO[]> {
     const logs = await auditLogRepo.findManyByEntity(entityType, entityId);
 
-    const logsWithActors = logs.map((log: any) => {
+    const logsWithActors = logs.map((log: AuditLogWithActor) => {
       if (!log.actor) {
         throw new Error('Actor not found');
       }

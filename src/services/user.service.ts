@@ -1,18 +1,6 @@
 import { UserRepository } from '../repositories/user.repository.js';
 import { UserPublic, Role } from '@incident-tracker/shared';
-import { User } from '@prisma/client';
-
-function toUserPublic(user: User): UserPublic {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role as Role,
-    isActive: user.isActive,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
-}
+import { toUserPublic } from '../lib/mappers.js';
 
 export class UserService {
   private userRepo = new UserRepository();

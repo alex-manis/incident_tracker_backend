@@ -15,8 +15,8 @@ export class AuthController {
       res.cookie(config.cookieName, result.refreshToken, config.cookieOptions);
 
       res.json({ user: result.user, accessToken: result.accessToken });
-    } catch (e: any) {
-      if (e?.message === "Invalid credentials") {
+    } catch (e) {
+      if (e instanceof Error && e.message === "Invalid credentials") {
         res.status(401).json({ error: "Invalid credentials" });
         return;
       }
@@ -46,7 +46,13 @@ export class AuthController {
       await authService.logout(refreshToken);
     }
 
-    res.clearCookie(config.cookieName, { path: '/' });
+    // Clear cookie with the same options used when setting it
+    res.clearCookie(config.cookieName, {
+      httpOnly: true,
+      secure: config.cookieOptions.secure,
+      sameSite: config.cookieOptions.sameSite,
+      path: config.cookieOptions.path, // Use the same path as when setting
+    });
     res.json({ message: 'Logged out' });
   }
 

@@ -1,52 +1,52 @@
 # Incident Tracker Backend
 
-Express API сервер для системы отслеживания инцидентов.
+Express API server for the incident tracking system.
 
-## Технологии
+## Technologies
 
 - Node.js + Express + TypeScript
 - PostgreSQL + Prisma ORM
-- JWT аутентификация с refresh token rotation
+- JWT authentication with refresh token rotation
 - pino logger
 - Prometheus metrics
 
-## Установка
+## Installation
 
 ```bash
 pnpm install
 ```
 
-## Настройка
+## Configuration
 
-1. Скопируйте `.env.example` в `.env`
-2. Настройте переменные окружения:
-   - `DATABASE_URL` - строка подключения к PostgreSQL
-   - `JWT_SECRET` - секретный ключ для JWT (минимум 32 символа)
-   - `JWT_REFRESH_SECRET` - секретный ключ для refresh token (минимум 32 символа)
-   - `PORT` - порт сервера (по умолчанию 3001)
-   - `FRONTEND_URL` - URL фронтенда для CORS
+1. Copy `.env.example` to `.env`
+2. Configure environment variables:
+   - `DATABASE_URL` - PostgreSQL connection string
+   - `JWT_SECRET` - JWT secret key (minimum 32 characters)
+   - `JWT_REFRESH_SECRET` - Refresh token secret key (minimum 32 characters)
+   - `PORT` - Server port (default 3001)
+   - `FRONTEND_URL` - Frontend URL for CORS
 
-## Запуск
+## Running
 
 ```bash
-# Разработка
+# Development
 pnpm dev
 
-# Продакшн
+# Production
 pnpm build
 pnpm start
 ```
 
-## База данных
+## Database
 
 ```bash
-# Генерация Prisma клиента
+# Generate Prisma client
 pnpm db:generate
 
-# Миграции
+# Migrations
 pnpm db:migrate
 
-# Семена (тестовые данные)
+# Seeds (test data)
 pnpm db:seed
 
 # Prisma Studio
@@ -55,36 +55,36 @@ pnpm db:studio
 
 ## API Endpoints
 
-- `POST /auth/login` - Вход
-- `POST /auth/refresh` - Обновление токена
-- `POST /auth/logout` - Выход
-- `GET /auth/me` - Текущий пользователь
-- `GET /users` - Список пользователей
-- `GET /incidents` - Список инцидентов
-- `POST /incidents` - Создать инцидент
-- `GET /incidents/:id` - Детали инцидента
-- `PATCH /incidents/:id` - Обновить инцидент
-- `GET /incidents/:id/comments` - Комментарии
-- `POST /incidents/:id/comments` - Создать комментарий
-- `GET /incidents/:id/audit` - История изменений
-- `GET /dashboard/summary` - Статистика
-- `GET /health` - Проверка здоровья
-- `GET /metrics` - Prometheus метрики
+- `POST /auth/login` - Login
+- `POST /auth/refresh` - Refresh token
+- `POST /auth/logout` - Logout
+- `GET /auth/me` - Current user
+- `GET /users` - Users list
+- `GET /incidents` - Incidents list
+- `POST /incidents` - Create incident
+- `GET /incidents/:id` - Incident details
+- `PATCH /incidents/:id` - Update incident
+- `GET /incidents/:id/comments` - Comments
+- `POST /incidents/:id/comments` - Create comment
+- `GET /incidents/:id/audit` - Change history
+- `GET /dashboard/summary` - Statistics
+- `GET /health` - Health check
+- `GET /metrics` - Prometheus metrics
 
-## Структура проекта
+## Project Structure
 
 ```
 src/
-├── config.ts           # Конфигурация
-├── index.ts            # Точка входа
-├── controllers/        # Контроллеры
-├── services/          # Бизнес-логика
-├── repositories/       # Работа с БД
-├── routes/            # Маршруты
+├── config.ts           # Configuration
+├── index.ts            # Entry point
+├── controllers/        # Controllers
+├── services/          # Business logic
+├── repositories/       # Database operations
+├── routes/            # Routes
 ├── middleware/        # Middleware
-└── lib/               # Утилиты (logger, jwt, hash)
+└── lib/               # Utilities (logger, jwt, hash)
 ```
 
-## Зависимости
+## Dependencies
 
-Проект использует общий пакет `@incident-tracker/shared` для типов и схем. Убедитесь, что он доступен в workspace или установлен отдельно.
+The project uses a shared package `@incident-tracker/shared` for types and schemas. Make sure it's available in the workspace or installed separately.

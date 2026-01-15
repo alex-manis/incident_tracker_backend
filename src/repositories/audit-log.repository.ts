@@ -1,5 +1,6 @@
 import { AuditLog } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
+import { AuditLogWithActor } from '../lib/types.js';
 
 export class AuditLogRepository {
   async create(data: {
@@ -17,7 +18,7 @@ export class AuditLogRepository {
     });
   }
 
-  async findManyByEntity(entityType: string, entityId: string): Promise<AuditLog[]> {
+  async findManyByEntity(entityType: string, entityId: string): Promise<AuditLogWithActor[]> {
     return prisma.auditLog.findMany({
       where: {
         entityType,

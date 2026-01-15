@@ -33,7 +33,8 @@ app.use(
 app.options("*", cors({ origin: config.frontendUrl, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
-app.use(pinoHttp({ logger: logger as any }));
+// pino-http types are not fully compatible, but this is safe
+app.use(pinoHttp({ logger }));
 
 // Routes
 app.use('/api/auth', authRoutes);

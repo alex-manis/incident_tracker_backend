@@ -1,5 +1,5 @@
 import { RefreshToken } from '@prisma/client';
-import { hashPassword, comparePassword } from '../lib/hash.js';
+import { hashToken, compareToken } from '../lib/hash.js';
 import { prisma } from '../lib/prisma.js';
 
 export class RefreshTokenRepository {
@@ -8,7 +8,7 @@ export class RefreshTokenRepository {
     token: string;
     expiresAt: Date;
   }): Promise<RefreshToken> {
-    const tokenHash = await hashPassword(data.token);
+    const tokenHash = hashToken(data.token);
     return prisma.refreshToken.create({
       data: {
         userId: data.userId,
@@ -19,24 +19,17 @@ export class RefreshTokenRepository {
   }
 
   async findByToken(userId: string, token: string): Promise<RefreshToken | null> {
-    const tokens = await prisma.refreshToken.findMany({
+    const tokenHash = hashToken(token);
+    return prisma.refreshToken.findFirst({
       where: {
         userId,
+        tokenHash,
         revokedAt: null,
         expiresAt: {
           gt: new Date(),
         },
       },
     });
-
-    for (const storedToken of tokens) {
-      const isValid = await comparePassword(token, storedToken.tokenHash);
-      if (isValid) {
-        return storedToken;
-      }
-    }
-
-    return null;
   }
 
   async revokeToken(id: string): Promise<void> {

@@ -1,11 +1,14 @@
 import { CommentRepository } from '../repositories/comment.repository.js';
 import { AuditLogRepository } from '../repositories/audit-log.repository.js';
-import { CreateCommentRequest, CommentWithAuthor } from '@incident-tracker/shared';
+import { CreateCommentRequest, CommentWithAuthor as CommentWithAuthorDTO } from '@incident-tracker/shared';
 import { prisma } from '../lib/prisma.js';
+import { logger } from '../lib/logger.js';
+import { CommentWithAuthor } from '../lib/types.js';
+
 const commentRepo = new CommentRepository();
 const auditLogRepo = new AuditLogRepository();
 
-function toCommentWithAuthor(comment: any): CommentWithAuthor {
+function toCommentWithAuthor(comment: CommentWithAuthor): CommentWithAuthorDTO {
   return {
     id: comment.id,
     incidentId: comment.incidentId,
@@ -25,10 +28,10 @@ function toCommentWithAuthor(comment: any): CommentWithAuthor {
 }
 
 export class CommentService {
-  async getManyByIncidentId(incidentId: string): Promise<CommentWithAuthor[]> {
+  async getManyByIncidentId(incidentId: string): Promise<CommentWithAuthorDTO[]> {
     const comments = await commentRepo.findManyByIncidentId(incidentId);
 
-    const commentsWithAuthors = comments.map((comment: any) => {
+    const commentsWithAuthors = comments.map((comment: CommentWithAuthor) => {
       if (!comment.author) {
         throw new Error('Author not found');
       }
@@ -42,7 +45,16 @@ export class CommentService {
     incidentId: string,
     data: CreateCommentRequest,
     authorId: string
-  ): Promise<CommentWithAuthor> {
+  ): Promise<CommentWithAuthorDTO> {
+    // Check incident existence
+    const incident = await prisma.incident.findUnique({
+      where: { id: incidentId },
+    });
+
+    if (!incident) {
+      throw new Error('Incident not found');
+    }
+
     const comment = await commentRepo.create({
       incidentId,
       authorId,
@@ -61,6 +73,13 @@ export class CommentService {
     if (!author) {
       throw new Error('Author not found');
     }
+
+    logger.info({ 
+      commentId: comment.id, 
+      incidentId, 
+      authorId 
+    }, 'Comment created');
+
     return toCommentWithAuthor({
       ...comment,
       author,

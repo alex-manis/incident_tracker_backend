@@ -21,7 +21,7 @@ export const config = {
     httpOnly: true,
     secure: isProd,
     sameSite,
-    path: "/api/auth/refresh",
+    path: "/", // Cookie available for all paths, not just /api/auth/refresh
     maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 } as const;

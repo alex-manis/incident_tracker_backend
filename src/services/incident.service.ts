@@ -5,13 +5,16 @@ import {
   UpdateIncidentRequest,
   IncidentFilters,
   PaginationParams,
-  IncidentWithRelations,
+  IncidentWithRelations as IncidentWithRelationsDTO,
   DashboardSummary,
 } from '@incident-tracker/shared';
+import { logger } from '../lib/logger.js';
+import { IncidentWithRelations } from '../lib/types.js';
+
 const incidentRepo = new IncidentRepository();
 const auditLogRepo = new AuditLogRepository();
 
-function toIncidentWithRelations(incident: any): IncidentWithRelations {
+function toIncidentWithRelations(incident: IncidentWithRelations): IncidentWithRelationsDTO {
   return {
     id: incident.id,
     title: incident.title,
@@ -50,10 +53,10 @@ export class IncidentService {
   async getMany(
     filters: IncidentFilters,
     pagination: PaginationParams
-  ): Promise<{ items: IncidentWithRelations[]; meta: any }> {
+  ): Promise<{ items: IncidentWithRelationsDTO[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
     const { items, total } = await incidentRepo.findMany(filters, pagination);
 
-    const itemsWithRelations = items.map((incident: any) => {
+    const itemsWithRelations = items.map((incident: IncidentWithRelations) => {
       if (!incident.reporter) {
         throw new Error('Reporter not found');
       }
@@ -71,21 +74,20 @@ export class IncidentService {
     };
   }
 
-  async getById(id: string): Promise<IncidentWithRelations> {
+  async getById(id: string): Promise<IncidentWithRelationsDTO> {
     const incident = await incidentRepo.findById(id);
     if (!incident) {
       throw new Error('Incident not found');
     }
 
-    const incidentWithRelations = incident as any;
-    if (!incidentWithRelations.reporter) {
+    if (!incident.reporter) {
       throw new Error('Reporter not found');
     }
 
-    return toIncidentWithRelations(incidentWithRelations);
+    return toIncidentWithRelations(incident);
   }
 
-  async create(data: CreateIncidentRequest, reporterId: string, actorId: string): Promise<IncidentWithRelations> {
+  async create(data: CreateIncidentRequest, reporterId: string, actorId: string): Promise<IncidentWithRelationsDTO> {
     const incident = await incidentRepo.create({
       ...data,
       reporterId,
@@ -101,6 +103,14 @@ export class IncidentService {
       diffJson: { ...data, reporterId },
     });
 
+    logger.info({ 
+      incidentId: incident.id, 
+      reporterId, 
+      actorId, 
+      severity: data.severity,
+      status: data.status 
+    }, 'Incident created');
+
     return this.getById(incident.id);
   }
 
@@ -108,13 +118,20 @@ export class IncidentService {
     id: string,
     data: UpdateIncidentRequest,
     actorId: string
-  ): Promise<IncidentWithRelations> {
+  ): Promise<IncidentWithRelationsDTO> {
     const existing = await incidentRepo.findById(id);
     if (!existing) {
       throw new Error('Incident not found');
     }
 
-    const updateData: any = {};
+    const updateData: Partial<{
+      title: string;
+      description: string;
+      severity: string;
+      status: string;
+      assigneeId: string | null;
+      dueAt: Date | null;
+    }> = {};
     if (data.title !== undefined) updateData.title = data.title;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.severity !== undefined) updateData.severity = data.severity;
@@ -126,8 +143,8 @@ export class IncidentService {
 
     const diff: Record<string, unknown> = {};
     Object.keys(updateData).forEach((key) => {
-      if (existing[key as keyof typeof existing] !== updateData[key]) {
-        diff[key] = { from: existing[key as keyof typeof existing], to: updateData[key] };
+      if (existing[key as keyof typeof existing] !== updateData[key as keyof typeof updateData]) {
+        diff[key] = { from: existing[key as keyof typeof existing], to: updateData[key as keyof typeof updateData] };
       }
     });
 
@@ -138,6 +155,13 @@ export class IncidentService {
       action: 'UPDATE',
       diffJson: diff,
     });
+
+    logger.info({ 
+      incidentId: id, 
+      actorId, 
+      updatedFields: Object.keys(updateData),
+      statusChange: data.status ? { from: existing.status, to: data.status } : undefined
+    }, 'Incident updated');
 
     return this.getById(id);
   }
