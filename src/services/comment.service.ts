@@ -61,12 +61,22 @@ export class CommentService {
       text: data.text,
     });
 
+    // Create audit log for the comment
     await auditLogRepo.create({
       actorId: authorId,
       entityType: 'Comment',
       entityId: comment.id,
       action: 'CREATE',
       diffJson: { text: data.text },
+    });
+
+    // Create audit log for the incident (comment added)
+    await auditLogRepo.create({
+      actorId: authorId,
+      entityType: 'Incident',
+      entityId: incidentId,
+      action: 'UPDATE',
+      diffJson: { commentAdded: true },
     });
 
     const author = await prisma.user.findUnique({ where: { id: authorId } });
