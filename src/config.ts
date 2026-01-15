@@ -23,6 +23,7 @@ export const config = {
     sameSite,
     path: "/", // Cookie available for all paths, not just /api/auth/refresh
     maxAge: 7 * 24 * 60 * 60 * 1000,
+    // Don't set domain - let browser handle it automatically for cross-origin requests
   },
 } as const;
 

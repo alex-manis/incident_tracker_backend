@@ -28,9 +28,17 @@ app.use(
   cors({
     origin: config.frontendUrl,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Type'],
   })
 );
-app.options("*", cors({ origin: config.frontendUrl, credentials: true }));
+app.options("*", cors({ 
+  origin: config.frontendUrl, 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(cookieParser());
 app.use(express.json());
 // pino-http types are not fully compatible, but this is safe

@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth.js';
 import { AuthService } from '../services/auth.service.js';
 import { config } from '../config.js';
 import { LoginRequestSchema } from '@incident-tracker/shared';
+import { logger } from '../lib/logger.js';
 
 const authService = new AuthService();
 
@@ -27,17 +28,30 @@ export class AuthController {
   async refresh(req: AuthRequest, res: Response): Promise<void> {
     const refreshToken = req.cookies[config.cookieName];
     if (!refreshToken) {
+      logger.warn({ 
+        cookies: Object.keys(req.cookies),
+        cookieName: config.cookieName,
+        hasCookies: !!req.cookies,
+        headers: {
+          cookie: req.headers.cookie ? 'present' : 'missing'
+        }
+      }, 'Refresh token not found in cookies');
       res.status(401).json({ error: 'Refresh token required' });
       return;
     }
 
-    const result = await authService.refresh(refreshToken);
+    try {
+      const result = await authService.refresh(refreshToken);
 
-    res.cookie(config.cookieName, result.refreshToken, config.cookieOptions);
+      res.cookie(config.cookieName, result.refreshToken, config.cookieOptions);
 
-    res.json({
-      accessToken: result.accessToken,
-    });
+      res.json({
+        accessToken: result.accessToken,
+      });
+    } catch (error) {
+      // Error is already logged in auth.service
+      throw error;
+    }
   }
 
   async logout(req: AuthRequest, res: Response): Promise<void> {
