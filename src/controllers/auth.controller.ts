@@ -26,7 +26,35 @@ export class AuthController {
   }
 
   async refresh(req: AuthRequest, res: Response): Promise<void> {
-    const refreshToken = req.cookies[config.cookieName];
+    // Handle multiple refreshToken cookies (can happen when cookies accumulate)
+    // Always parse cookie header to get all tokens, not just the first one from cookie-parser
+    let refreshToken: string | undefined;
+    const tokenCandidates: string[] = [];
+    
+    // Get token from cookie-parser (might be the first one if multiple exist)
+    if (req.cookies[config.cookieName]) {
+      tokenCandidates.push(req.cookies[config.cookieName]);
+    }
+    
+    // Parse cookie header manually to get all refreshToken values
+    if (req.headers.cookie) {
+      const cookies = req.headers.cookie.split(';').map(c => c.trim());
+      const tokenCookies = cookies
+        .filter(c => c.startsWith(`${config.cookieName}=`))
+        .map(c => c.substring(config.cookieName.length + 1));
+      
+      tokenCandidates.push(...tokenCookies);
+    }
+    
+    // Remove duplicates and use the last (most recent) token
+    const uniqueTokens = Array.from(new Set(tokenCandidates));
+    
+    if (uniqueTokens.length > 1) {
+      logger.debug({ tokenCount: uniqueTokens.length }, 'Found multiple refreshToken cookies, using the last one');
+    }
+    
+    refreshToken = uniqueTokens[uniqueTokens.length - 1];
+
     if (!refreshToken) {
       logger.warn({ 
         cookies: Object.keys(req.cookies),
@@ -43,6 +71,13 @@ export class AuthController {
     try {
       const result = await authService.refresh(refreshToken);
 
+      // Clear old cookie and set new one
+      res.clearCookie(config.cookieName, {
+        httpOnly: true,
+        secure: config.cookieOptions.secure,
+        sameSite: config.cookieOptions.sameSite,
+        path: config.cookieOptions.path,
+      });
       res.cookie(config.cookieName, result.refreshToken, config.cookieOptions);
 
       res.json({
