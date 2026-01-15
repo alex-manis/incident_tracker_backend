@@ -1,6 +1,6 @@
 import { CommentRepository } from '../repositories/comment.repository.js';
 import { AuditLogRepository } from '../repositories/audit-log.repository.js';
-import { CreateCommentRequest, CommentWithAuthor as CommentWithAuthorDTO } from '@incident-tracker/shared';
+import { CreateCommentRequest, CommentWithAuthor as CommentWithAuthorDTO, Role } from '@incident-tracker/shared';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../lib/logger.js';
 import { CommentWithAuthor } from '../lib/types.js';
@@ -19,7 +19,7 @@ function toCommentWithAuthor(comment: CommentWithAuthor): CommentWithAuthorDTO {
       id: comment.author.id,
       name: comment.author.name,
       email: comment.author.email,
-      role: comment.author.role,
+      role: comment.author.role as Role,
       isActive: comment.author.isActive,
       createdAt: comment.author.createdAt,
       updatedAt: comment.author.updatedAt,

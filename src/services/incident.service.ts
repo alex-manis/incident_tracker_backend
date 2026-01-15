@@ -7,6 +7,9 @@ import {
   PaginationParams,
   IncidentWithRelations as IncidentWithRelationsDTO,
   DashboardSummary,
+  Role,
+  IncidentSeverity,
+  IncidentStatus,
 } from '@incident-tracker/shared';
 import { logger } from '../lib/logger.js';
 import { IncidentWithRelations } from '../lib/types.js';
@@ -19,8 +22,8 @@ function toIncidentWithRelations(incident: IncidentWithRelations): IncidentWithR
     id: incident.id,
     title: incident.title,
     description: incident.description,
-    severity: incident.severity,
-    status: incident.status,
+    severity: incident.severity as IncidentSeverity,
+    status: incident.status as IncidentStatus,
     assigneeId: incident.assigneeId,
     reporterId: incident.reporterId,
     dueAt: incident.dueAt,
@@ -31,7 +34,7 @@ function toIncidentWithRelations(incident: IncidentWithRelations): IncidentWithR
           id: incident.assignee.id,
           name: incident.assignee.name,
           email: incident.assignee.email,
-          role: incident.assignee.role,
+          role: incident.assignee.role as Role,
           isActive: incident.assignee.isActive,
           createdAt: incident.assignee.createdAt,
           updatedAt: incident.assignee.updatedAt,
@@ -41,7 +44,7 @@ function toIncidentWithRelations(incident: IncidentWithRelations): IncidentWithR
       id: incident.reporter.id,
       name: incident.reporter.name,
       email: incident.reporter.email,
-      role: incident.reporter.role,
+      role: incident.reporter.role as Role,
       isActive: incident.reporter.isActive,
       createdAt: incident.reporter.createdAt,
       updatedAt: incident.reporter.updatedAt,
@@ -108,7 +111,6 @@ export class IncidentService {
       reporterId, 
       actorId, 
       severity: data.severity,
-      status: data.status 
     }, 'Incident created');
 
     return this.getById(incident.id);
@@ -160,7 +162,7 @@ export class IncidentService {
       incidentId: id, 
       actorId, 
       updatedFields: Object.keys(updateData),
-      statusChange: data.status ? { from: existing.status, to: data.status } : undefined
+      statusChange: data.status !== undefined ? { from: existing.status, to: data.status } : undefined
     }, 'Incident updated');
 
     return this.getById(id);

@@ -1,5 +1,5 @@
 import { AuditLogRepository } from '../repositories/audit-log.repository.js';
-import { AuditLogWithActor as AuditLogWithActorDTO } from '@incident-tracker/shared';
+import { AuditLogWithActor as AuditLogWithActorDTO, Role } from '@incident-tracker/shared';
 import { AuditLogWithActor } from '../lib/types.js';
 
 const auditLogRepo = new AuditLogRepository();
@@ -17,7 +17,7 @@ function toAuditLogWithActor(log: AuditLogWithActor): AuditLogWithActorDTO {
       id: log.actor.id,
       name: log.actor.name,
       email: log.actor.email,
-      role: log.actor.role,
+      role: log.actor.role as Role,
       isActive: log.actor.isActive,
       createdAt: log.actor.createdAt,
       updatedAt: log.actor.updatedAt,
