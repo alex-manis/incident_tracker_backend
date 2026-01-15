@@ -1,5 +1,5 @@
 import { RefreshToken } from '@prisma/client';
-import { hashToken, compareToken } from '../lib/hash.js';
+import { hashToken, compareToken, comparePassword } from '../lib/hash.js';
 import { prisma } from '../lib/prisma.js';
 
 export class RefreshTokenRepository {
@@ -19,8 +19,9 @@ export class RefreshTokenRepository {
   }
 
   async findByToken(userId: string, token: string): Promise<RefreshToken | null> {
+    // First, try to find with SHA-256 hash (new format)
     const tokenHash = hashToken(token);
-    return prisma.refreshToken.findFirst({
+    const storedToken = await prisma.refreshToken.findFirst({
       where: {
         userId,
         tokenHash,
@@ -29,6 +30,50 @@ export class RefreshTokenRepository {
           gt: new Date(),
         },
       },
+    });
+
+    if (storedToken) {
+      return storedToken;
+    }
+
+    // Fallback: check all tokens for this user (for backward compatibility with bcrypt hashed tokens)
+    // This handles tokens created before the migration from bcrypt to SHA-256
+    const allTokens = await prisma.refreshToken.findMany({
+      where: {
+        userId,
+        revokedAt: null,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    for (const tokenRecord of allTokens) {
+      // Try bcrypt comparison (for old tokens)
+      try {
+        const isValid = await comparePassword(token, tokenRecord.tokenHash);
+        if (isValid) {
+          // Found old token - migrate it to SHA-256
+          await this.migrateTokenToSha256(tokenRecord.id, token);
+          return tokenRecord;
+        }
+      } catch (error) {
+        // If comparePassword fails, it's not a bcrypt hash, skip
+        continue;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Migrates a token from bcrypt to SHA-256 hash
+   */
+  private async migrateTokenToSha256(tokenId: string, token: string): Promise<void> {
+    const newHash = hashToken(token);
+    await prisma.refreshToken.update({
+      where: { id: tokenId },
+      data: { tokenHash: newHash },
     });
   }
 
